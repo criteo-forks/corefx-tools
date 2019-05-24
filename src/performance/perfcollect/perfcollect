@@ -1430,7 +1430,7 @@ ProcessCollectedData()
 		OLDIFS=$IFS
 
 		imagePaths=""
-
+		crossgenTPAKeys=""
 		if [ "$crossgenCmd" != "" ]
 		then
 	            local perfinfos=`ls . | grep perfinfo | cut -d ' ' -f 2`
@@ -1442,8 +1442,9 @@ ProcessCollectedData()
 	                    while read command dll guid; do
 	                        if [ $command ]; then
 	                            if [ $command = "ImageLoad" ]; then
-	                                if [ -f $dll ]; then
+	                                if [ -f "$dll" ]; then
 	                                    imagePaths="${dll}:${imagePaths}"
+	                                    crossgenTPAKeys="/r ${dll} ${crossgenTPAKeys}"
 	                                fi
 	                            fi
 	                        fi
@@ -1460,8 +1461,8 @@ ProcessCollectedData()
 	                then
 	                    IFS=""
 	                    LogAppend "Generating PerfMap for ${path}"
-	                    LogAppend "Running ${crossgenCmd} /Trusted_Platform_Assemblies $imagePaths /CreatePerfMap . ${path}"
-	                    ${crossgenCmd} /Trusted_Platform_Assemblies $imagePaths /CreatePerfMap . ${path} >> $logFile 2>&1
+	                    LogAppend "Running ${crossgenCmd} ${crossgenTPAKeys} /CreatePerfMap . ${path}"
+	                    ${crossgenCmd} ${crossgenTPAKeys} /CreatePerfMap . ${path} >> $logFile 2>&1
 	                    IFS=":"
 	                else
 	                    LogAppend "Skipping ${path}"
@@ -1534,7 +1535,7 @@ ProcessCollectedData()
 
 		WriteStatus "...FINISHED"
 
-	        WriteStatus "Exporting perf.data file"
+	    WriteStatus "Exporting perf.data file"
 
 		# Merge sched_stat and sched_switch events.
 		outputDumpFile="perf.data.txt"
